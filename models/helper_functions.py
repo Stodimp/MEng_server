@@ -5,7 +5,7 @@ from typing import Tuple, List, Union, Dict
 import datetime
 
 
-def get_metric_list():
+def get_metric_list() -> List[tf.keras.metrics.Metric]:
     """returns list of useful metrics for training
 
     Returns:
@@ -46,7 +46,7 @@ def get_train_val_ds(raddet_path: str, adc_path: str, config_bins: Tuple[int, in
     return train_ds_batched, val_ds_batched
 
 
-def create_callback_list(model_name, patience: int = 5, metric: str = "val_AUCROC"):
+def create_callback_list(model_name:str, patience: int = 5, metric: str = "val_AUCROC"):
     checkpoint_path = (
         "checkpoints/"
         + model_name
@@ -59,7 +59,7 @@ def create_callback_list(model_name, patience: int = 5, metric: str = "val_AUCRO
                                                           save_weights_only=True,
                                                           verbose=0)
     early_stopping = tf.keras.callbacks.EarlyStopping(monitor=metric,
-                                                      min_delta=0.005,
+                                                      min_delta=0.005,  # type: ignore
                                                       patience=patience,
                                                       verbose=1,
                                                       restore_best_weights=False)

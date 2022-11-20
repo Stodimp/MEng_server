@@ -15,7 +15,7 @@ import util.helper as helper
 
 class DataGenerator:
 
-    def __init__(self, config_path_adc, config_path, config_bins, config_overlap):
+    def __init__(self, config_path_adc, config_path, config_bins, config_overlap) -> None:
         self.config_path_adc = config_path_adc
         self.config_path_gt = config_path
         self.azimuth_bins = config_bins[0]
@@ -26,7 +26,7 @@ class DataGenerator:
         self.ADC_sequences_test = self.readSequence(mode="test")
         self.max_range = 50
 
-    def readSequence(self, mode):
+    def readSequence(self, mode: str) -> List[str]:
         """readSequence: gather paths to all npy files in the ADC direc
 
         Args:
@@ -133,6 +133,8 @@ class DataGenerator:
                 (mh_def.size + mh_overlap.size), dtype=mh_def.dtype)
             multihot_azimuth[0::2] = mh_def
             multihot_azimuth[1::2] = mh_overlap
+            multihot_range = np.empty(
+                (mh_def.size + mh_overlap.size), dtype=mh_def.dtype)
 
         # Bin and multi hot ecode the range data
 

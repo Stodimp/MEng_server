@@ -6,7 +6,7 @@ import json
 import pathlib
 import datetime
 
-from tensorflow.keras import layers
+from tensorflow.python.keras import layers
 
 import helper_functions
 
@@ -38,7 +38,7 @@ def main() -> int:
     AZIMUTH_BIN_NUM = 18
     RANGE_BIN_NUM = 50
     OVERLAP = True
-    BATCH_SIZE = 32
+    BATCH_SIZE = 128
     train_ds, val_ds = helper_functions.get_train_val_ds(
         raddet_path=RADDET_PATH,
         adc_path=ADC_PATH,
@@ -55,48 +55,18 @@ def main() -> int:
     OPTIMIZER = tf.keras.optimizers.Adam()
     LOSS = tf.keras.losses.BinaryCrossentropy()
     EPOCH_NUM = 50
-    MODEL_NAME = "six_conv_10_overlap"
+    MODEL_NAME = "le_net"
     CALLBACKS = helper_functions.create_callback_list(
         model_name=MODEL_NAME, patience=10, metric="val_loss")
 
     inputs = layers.Input(shape=(256, 64, 8, 2), name="input_layer")
-    x = layers.Conv3D(64, 3, padding="same",
+    x = layers.Conv3D(6, 5, padding="same",
                       activation="linear", name="conv3d_1")(inputs)
-    x = layers.Dropout(0.1, name="dropout_1")(x)
     x = layers.Activation("relu", name="relu_1")(x)
-    x = layers.BatchNormalization()(x)
     x = layers.MaxPooling3D((2, 2, 1), name="maxpool_1")(x)
-    x = layers.Conv3D(64, 3, padding="same",
-                      activation="linear", name="conv3d_2")(x)
-    x = layers.Dropout(0.1, name="dropout_2")(x)
-    x = layers.Activation("relu", name="relu_2")(x)
-    x = layers.BatchNormalization()(x)
-    x = layers.MaxPooling3D((2, 2, 2), name="maxpool_2")(x)
-    x = layers.Conv3D(32, 3, padding="same",
-                      activation="linear", name="conv3d_3")(x)
-    x = layers.Dropout(0.1, name="dropout_3")(x)
-    x = layers.Activation("relu", name="relu_3")(x)
-    x = layers.BatchNormalization()(x)
-    x = layers.MaxPooling3D((2, 2, 1), name="maxpool_3")(x)
-    x = layers.Conv3D(32, 3, padding="same",
-                      activation="linear", name="conv3d_4")(x)
-    x = layers.Dropout(0.1, name="dropout_4")(x)
-    x = layers.Activation("relu", name="relu_4")(x)
-    x = layers.BatchNormalization()(x)
-    x = layers.MaxPooling3D((2, 2, 2), name="maxpool_4")(x)
-    x = layers.Conv3D(32, 3, padding="same",
-                      activation="linear", name="conv3d_5")(x)
-    x = layers.Dropout(0.1, name="dropout_5")(x)
-    x = layers.Activation("relu", name="relu_5")(x)
-    x = layers.BatchNormalization()(x)
-    x = layers.MaxPooling3D((2, 2, 1), name="maxpool_5")(x)
-    x = layers.Conv3D(16, 3, padding="same",
-                      activation="linear", name="conv3d_6")(x)
-    x = layers.Dropout(0.1, name="dropout_6")(x)
-    x = layers.Activation("relu", name="relu_6")(x)
-    x = layers.BatchNormalization()(x)
-    x = layers.MaxPooling3D((2, 2, 2), name="maxpool_6")(x)
     x = layers.Flatten(name="flatten")(x)
+    x = layers.Dense(120, activation="relu", name="fc_1")(x)
+    x = layers.Dense(84, activation="relu", name="fc_2")(x)
     outputs = layers.Dense(
         output_nodes, activation="sigmoid", name="output")(x)
     model = tf.keras.Model(inputs, outputs, name=MODEL_NAME)
