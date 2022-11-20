@@ -1,0 +1,33 @@
+# Data folders
+ADC/
+gt_slim/
+ADC.zip
+gt_slim.zip
+
+# Server test scripts
+test_scripts/
+
+# Checkpoints
+checkpoints/
+results/
+
+# Environments
+*.yml
+
+# Slurm outputs
+slurm*.out
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
