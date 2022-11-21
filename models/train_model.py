@@ -6,11 +6,8 @@ import json
 import pathlib
 import datetime
 
-from tensorflow.keras import layers
-# For pylance, it needs:
-# from tensorflow.python.keras import layers
-
 import helper_functions
+import architectures
 
 
 def main() -> int:
@@ -35,10 +32,10 @@ def main() -> int:
     #########################################################
 
     # Data setup
-    AZIMUTH_BIN_NUM = 18
+    AZIMUTH_BIN_NUM = 36
     RANGE_BIN_NUM = 50
-    OVERLAP = True
-    BATCH_SIZE = 128
+    OVERLAP = False
+    BATCH_SIZE = 32
     train_ds, val_ds = helper_functions.get_train_val_ds(
         raddet_path=RADDET_PATH,
         adc_path=ADC_PATH,
@@ -55,25 +52,12 @@ def main() -> int:
     OPTIMIZER = tf.keras.optimizers.Adam()
     LOSS = tf.keras.losses.BinaryCrossentropy()
     EPOCH_NUM = 50
-    MODEL_NAME = "le_net_label_improved"
+    MODEL_NAME = "6_conv_overlap_new_label"
     CALLBACKS = helper_functions.create_callback_list(
         model_name=MODEL_NAME, patience=10, metric="val_loss")
 
-    inputs = layers.Input(shape=(256, 64, 8, 2), name="input_layer")
-    x = layers.Conv3D(6, 5, padding="same",
-                      activation="linear", name="conv3d_1")(inputs)
-    x = layers.Activation("relu", name="relu_1")(x)
-    x = layers.MaxPooling3D((2, 2, 1), name="maxpool_1")(x)
-    x = layers.Conv3D(16, 3, padding="same",
-                      activation="linear", name="conv3d_2")(x)
-    x = layers.Activation("relu", name="relu_2")(x)
-    x = layers.MaxPooling3D((2, 2, 2), name="maxpool_2")(x)
-    x = layers.Flatten(name="flatten")(x)
-    x = layers.Dense(120, activation="relu", name="fc_1")(x)
-    x = layers.Dense(84, activation="relu", name="fc_2")(x)
-    outputs = layers.Dense(
-        output_nodes, activation="sigmoid", name="output")(x)
-    model = tf.keras.Model(inputs, outputs, name=MODEL_NAME)
+    model = architectures.six_conv(
+        model_name=MODEL_NAME, output_nodes=output_nodes)
     #########################################################
 
     # Train model
