@@ -32,9 +32,9 @@ def main() -> int:
     #########################################################
 
     # Data setup
-    AZIMUTH_BIN_NUM = 36
+    AZIMUTH_BIN_NUM = 18
     RANGE_BIN_NUM = 50
-    OVERLAP = False
+    OVERLAP = True
     BATCH_SIZE = 32
     train_ds, val_ds = helper_functions.get_train_val_ds(
         raddet_path=RADDET_PATH,
@@ -52,11 +52,11 @@ def main() -> int:
     OPTIMIZER = tf.keras.optimizers.Adam()
     LOSS = tf.keras.losses.BinaryCrossentropy()
     EPOCH_NUM = 50
-    MODEL_NAME = "6_conv_overlap_new_label"
+    MODEL_NAME = "alex_net"
     CALLBACKS = helper_functions.create_callback_list(
         model_name=MODEL_NAME, patience=10, metric="val_loss")
 
-    model = architectures.six_conv(
+    model = architectures.alex_net(
         model_name=MODEL_NAME, output_nodes=output_nodes)
     #########################################################
 
