@@ -6,7 +6,9 @@ import json
 import pathlib
 import datetime
 
-from tensorflow.python.keras import layers
+from tensorflow.keras import layers
+# For pylance, it needs:
+# from tensorflow.python.keras import layers
 
 import helper_functions
 
@@ -21,10 +23,8 @@ def main() -> int:
         RADDET_PATH = raddet_local_shared
     else:
         raise IOError("No valid local RADDet path available, check localdisk")
-    print("RADdet set to ", RADDET_PATH)
     ADC_PATH = os.path.join(RADDET_PATH, "ADC")
     GT_PATH = os.path.join(RADDET_PATH, "gt_slim")
-    print("Paths set to ", ADC_PATH)
     # Set GPU memory growth
     helper_functions.gpu_mem_setup()
     # Assert GPU available
@@ -55,7 +55,7 @@ def main() -> int:
     OPTIMIZER = tf.keras.optimizers.Adam()
     LOSS = tf.keras.losses.BinaryCrossentropy()
     EPOCH_NUM = 50
-    MODEL_NAME = "le_net"
+    MODEL_NAME = "le_net_label_improved"
     CALLBACKS = helper_functions.create_callback_list(
         model_name=MODEL_NAME, patience=10, metric="val_loss")
 
@@ -64,6 +64,10 @@ def main() -> int:
                       activation="linear", name="conv3d_1")(inputs)
     x = layers.Activation("relu", name="relu_1")(x)
     x = layers.MaxPooling3D((2, 2, 1), name="maxpool_1")(x)
+    x = layers.Conv3D(16, 3, padding="same",
+                      activation="linear", name="conv3d_2")(x)
+    x = layers.Activation("relu", name="relu_2")(x)
+    x = layers.MaxPooling3D((2, 2, 2), name="maxpool_2")(x)
     x = layers.Flatten(name="flatten")(x)
     x = layers.Dense(120, activation="relu", name="fc_1")(x)
     x = layers.Dense(84, activation="relu", name="fc_2")(x)

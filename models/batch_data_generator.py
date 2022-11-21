@@ -54,7 +54,7 @@ class DataGenerator:
                             \n Tried to read from {os.path.join(self.config_path_adc, '/*.npy')}")
         return sequences
 
-    def box_to_cords(self, row_box):
+    def angle_box_to_cords(self, row_box):
         """box_to_cords - calculate 3 DOA range-azimuth pairs from every bounding box in the labels (leftmost, center, rightmost coords)
 
         Args:
@@ -65,12 +65,12 @@ class DataGenerator:
         """
         # Unpack box
         range_center, angle_center, doppler_center, range_width, angle_height, doppler_depth = row_box
-        # lamda to covert binned range-angle data to unite vals
-        def range_convert(r): return (r/256) * self.max_range
+        # lamda to covert binned angle data to unite vals
         def angle_convert(a): return (a/256) * math.pi  # result in radians
-        return [(range_convert(range_center - range_width/2), angle_convert(angle_center - angle_height/2)),
-                (range_convert(range_center), angle_convert(angle_center)),
-                (range_convert(range_center + range_width/2), angle_convert(angle_center + angle_height/2))]
+        # max resolution angle = pi / 256
+        cords_in_box = np.arange(
+            (angle_center - angle_height/2), (angle_center + angle_height/2) + 1)
+        return np.apply_along_axis(angle_convert, axis=0, arr=cords_in_box)
 
     def encodeToLabels(self, gt_instaces, azimuth_bins_num=9, range_bins_num=50):
         # Rewrite - 'box' is in RAD format, not 3D cartesian - values are binned, not m or rad
@@ -90,12 +90,13 @@ class DataGenerator:
             azimuth_bins = list(map(lambda x: math.radians(x),
                                     np.linspace(0, 180, azimuth_bins_num, endpoint=False)))
             range_bins = np.linspace(0, 50, range_bins_num, endpoint=False)
-            gt_inst_doa = list(map(self.box_to_cords, gt_instaces['boxes']))
+            gt_inst_angle = list(
+                map(self.angle_box_to_cords, gt_instaces['boxes']))
             # Format the DOA data as list of tuples
             gt_inst_rad = [
-                range_azimuth[1] for ra_trio in gt_inst_doa for range_azimuth in ra_trio]
-            gt_inst_meter = [
-                range_azimuth[0] for ra_trio in gt_inst_doa for range_azimuth in ra_trio]
+                angle_inst for angle_collection in gt_inst_angle for angle_inst in angle_collection]
+            # Placeholder for Range values
+            gt_inst_meter = np.zeros(len(gt_inst_rad))
             # Bin and multi-hot encode the angle data
             binned_azimuth = np.unique(
                 np.digitize(gt_inst_rad, azimuth_bins) - 1)
@@ -113,16 +114,17 @@ class DataGenerator:
                 azimuth_bins_num, 180+azimuth_bin_overlap, step=(180/azimuth_bins_num))
 
             # Convert coordinates of bounding boxes to range-azimuth DOA
-            gt_inst_doa = list(map(self.box_to_cords, gt_instaces['boxes']))
+            gt_inst_angle = list(
+                map(self.angle_box_to_cords, gt_instaces['boxes']))
             # Format the DOA data as list of tuples
-            gt_inst_doa = [
-                range_azimuth for ra_trio in gt_inst_doa for range_azimuth in ra_trio]
+            gt_inst_angle = [
+                azimuth for angle_collection in gt_inst_angle for azimuth in angle_collection]
 
             # Bin azimuth data
             azimuth_def_idx = np.unique(np.digitize(
-                [y for (_, y) in gt_inst_doa], np.radians(azimuth_bin_default)) - 1)
+                gt_inst_angle, np.radians(azimuth_bin_default)) - 1)
             azimuth_overlap_idx = np.unique(np.digitize(
-                [y for (_, y) in gt_inst_doa], np.radians(azimuth_bin_offset)) - 1)
+                gt_inst_angle, np.radians(azimuth_bin_offset)) - 1)
             # Multi hot encode both the default and offset windowed data separately
             mh_def = np.zeros(azimuth_bin_default.shape)
             mh_def[azimuth_def_idx] = 1
