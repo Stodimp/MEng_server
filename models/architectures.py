@@ -93,7 +93,9 @@ def reshape_conv2D(model_name: str, output_nodes: int) -> tf.keras.Model:
     x = tf.keras.layers.Flatten(name="flatten")(x)
     outputs = tf.keras.layers.Dense(
         output_nodes, activation="sigmoid", name="output")(x)
-    return tf.keras.Model(inputs, outputs, name=model_name)
+    model = tf.keras.Model(inputs, outputs, name=model_name)
+    print(model.summary())
+    return model
 
 
 def le_net_regularization(model_name: str, output_nodes: int) -> tf.keras.Model:
@@ -185,11 +187,59 @@ def alex_net_regularized(model_name: str, output_nodes: int) -> tf.keras.Model:
     x = tf.keras.layers.Flatten(name="flatten")(x)
     x = tf.keras.layers.Dense(1024, activation="relu", name="fc_1")(x)
     x = tf.keras.layers.Dropout(0.1, name="dropout_fc1")(x)
-    x = tf.keras.layers.Dense(1024, activation="relu", name="fc_2")(x)
+    x = tf.keras.layers.Dense(512, activation="relu", name="fc_2")(x)
     x = tf.keras.layers.Dropout(0.1, name="dropout_fc2")(x)
     outputs = tf.keras.layers.Dense(
         output_nodes, activation="sigmoid", name="output")(x)
-    return tf.keras.Model(inputs, outputs, name=model_name)
+    model = tf.keras.Model(inputs, outputs, name=model_name)
+    print(model.summary())
+    return model
+
+
+def six_conv_v2(model_name: str, output_nodes: int) -> tf.keras.Model:
+    inputs = tf.keras.layers.Input(shape=(256, 64, 8, 2), name="input_layer")
+    x = tf.keras.layers.Conv3D(128, 7, padding="same",
+                               activation="linear", name="conv3d_1")(inputs)
+    x = tf.keras.layers.Dropout(0.2, name="dropout_1")(x)
+    x = tf.keras.layers.Activation("relu", name="relu_1")(x)
+    x = tf.keras.layers.BatchNormalization()(x)
+    x = tf.keras.layers.MaxPooling3D((2, 2, 1), name="maxpool_1")(x)
+    x = tf.keras.layers.Conv3D(128, 5, padding="same",
+                               activation="linear", name="conv3d_2")(x)
+    x = tf.keras.layers.Dropout(0.2, name="dropout_2")(x)
+    x = tf.keras.layers.Activation("relu", name="relu_2")(x)
+    x = tf.keras.layers.BatchNormalization()(x)
+    x = tf.keras.layers.MaxPooling3D((2, 2, 2), name="maxpool_2")(x)
+    x = tf.keras.layers.Conv3D(64, 5, padding="same",
+                               activation="linear", name="conv3d_3")(x)
+    x = tf.keras.layers.Dropout(0.2, name="dropout_3")(x)
+    x = tf.keras.layers.Activation("relu", name="relu_3")(x)
+    x = tf.keras.layers.BatchNormalization()(x)
+    x = tf.keras.layers.MaxPooling3D((2, 2, 1), name="maxpool_3")(x)
+    x = tf.keras.layers.Conv3D(64, 3, padding="same",
+                               activation="linear", name="conv3d_4")(x)
+    x = tf.keras.layers.Dropout(0.2, name="dropout_4")(x)
+    x = tf.keras.layers.Activation("relu", name="relu_4")(x)
+    x = tf.keras.layers.BatchNormalization()(x)
+    x = tf.keras.layers.MaxPooling3D((2, 2, 2), name="maxpool_4")(x)
+    x = tf.keras.layers.Conv3D(32, 3, padding="same",
+                               activation="linear", name="conv3d_5")(x)
+    x = tf.keras.layers.Dropout(0.1, name="dropout_5")(x)
+    x = tf.keras.layers.Activation("relu", name="relu_5")(x)
+    x = tf.keras.layers.BatchNormalization()(x)
+    x = tf.keras.layers.MaxPooling3D((2, 2, 1), name="maxpool_5")(x)
+    x = tf.keras.layers.Conv3D(32, 3, padding="same",
+                               activation="linear", name="conv3d_6")(x)
+    x = tf.keras.layers.Dropout(0.1, name="dropout_6")(x)
+    x = tf.keras.layers.Activation("relu", name="relu_6")(x)
+    x = tf.keras.layers.BatchNormalization()(x)
+    x = tf.keras.layers.MaxPooling3D((2, 2, 2), name="maxpool_6")(x)
+    x = tf.keras.layers.Flatten(name="flatten")(x)
+    outputs = tf.keras.layers.Dense(
+        output_nodes, activation="sigmoid", name="output")(x)
+    model = tf.keras.Model(inputs, outputs, name=model_name)
+    print(model.summary())
+    return model
 
 
 def main():

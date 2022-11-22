@@ -111,7 +111,7 @@ class DataGenerator:
             azimuth_bin_default = np.arange(
                 0, 180, step=(180/azimuth_bins_num))
             azimuth_bin_offset = np.arange(
-                azimuth_bins_num, 180+azimuth_bin_overlap, step=(180/azimuth_bins_num))
+                0+azimuth_bin_overlap, 180, step=(180/azimuth_bins_num))
 
             # Convert coordinates of bounding boxes to range-azimuth DOA
             gt_inst_angle = list(
@@ -258,15 +258,15 @@ class DataGenerator:
 
     def trainGenerator(self,):
         return tf.data.Dataset.from_generator(self.trainData,
-                                              output_signature=(tf.TensorSpec(shape=(256, 64, 8, 2), dtype=tf.float64),
-                                                                tf.TensorSpec(shape=(self.azimuth_bins if not self.overlap else 2*(self.azimuth_bins-1),), dtype=tf.float64)))
+                                              output_signature=(tf.TensorSpec(shape=(256, 64, 8, 2), dtype=tf.float64),  # type: ignore
+                                                                tf.TensorSpec(shape=(self.azimuth_bins if not self.overlap else 2*self.azimuth_bins), dtype=tf.float64)))  # type: ignore
 
     def validateGenerator(self,):
         return tf.data.Dataset.from_generator(self.validateData,
-                                              output_signature=(tf.TensorSpec(shape=(256, 64, 8, 2), dtype=tf.float64),
-                                                                tf.TensorSpec(shape=(self.azimuth_bins if not self.overlap else 2*(self.azimuth_bins-1),), dtype=tf.float64)))
+                                              output_signature=(tf.TensorSpec(shape=(256, 64, 8, 2), dtype=tf.float64),  # type: ignore
+                                                                tf.TensorSpec(shape=(self.azimuth_bins if not self.overlap else 2*self.azimuth_bins), dtype=tf.float64)))  # type: ignore
 
     def testGenerator(self,):
         return tf.data.Dataset.from_generator(self.testData,
-                                              output_signature=(tf.TensorSpec(shape=(256, 64, 8, 2), dtype=tf.float64),
-                                                                tf.TensorSpec(shape=(self.azimuth_bins if not self.overlap else 2*(self.azimuth_bins-1),), dtype=tf.float64)))
+                                              output_signature=(tf.TensorSpec(shape=(256, 64, 8, 2), dtype=tf.float64),  # type: ignore
+                                                                tf.TensorSpec(shape=(self.azimuth_bins if not self.overlap else 2*self.azimuth_bins), dtype=tf.float64)))  # type: ignore
