@@ -32,7 +32,7 @@ def main() -> int:
     #########################################################
 
     # Data setup
-    AZIMUTH_BIN_NUM = 18
+    AZIMUTH_BIN_NUM = 45
     RANGE_BIN_NUM = 50
     OVERLAP = True
     BATCH_SIZE = 32
@@ -44,7 +44,7 @@ def main() -> int:
         batch_size=BATCH_SIZE
     )
 
-    output_nodes = AZIMUTH_BIN_NUM if not OVERLAP else 2*(AZIMUTH_BIN_NUM-1)
+    output_nodes = AZIMUTH_BIN_NUM if not OVERLAP else 2*(AZIMUTH_BIN_NUM)
 
     # Model
     ########
@@ -52,11 +52,11 @@ def main() -> int:
     OPTIMIZER = tf.keras.optimizers.Adam()
     LOSS = tf.keras.losses.BinaryCrossentropy()
     EPOCH_NUM = 50
-    MODEL_NAME = "alex_net"
+    MODEL_NAME = "six_conv_4degree"
     CALLBACKS = helper_functions.create_callback_list(
         model_name=MODEL_NAME, patience=10, metric="val_loss")
 
-    model = architectures.alex_net(
+    model = architectures.six_conv(
         model_name=MODEL_NAME, output_nodes=output_nodes)
     #########################################################
 
