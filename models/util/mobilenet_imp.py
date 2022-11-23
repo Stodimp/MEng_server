@@ -1,10 +1,12 @@
 import tensorflow as tf
 
 from tensorflow import keras
-from keras.layers import Input, Flatten, Dense, Conv2D, DepthwiseConv2D, BatchNormalization, ReLU, AvgPool2D
+from keras.layers import Input, Dense, Conv2D, DepthwiseConv2D, Conv3D, AveragePooling3D
+from keras.layers import BatchNormalization, ReLU, GlobalAveragePooling2D, Reshape
 from keras import Model
 # Build mobile-net then modify for own data
 # Built using https://towardsdatascience.com/building-mobilenet-from-scratch-using-tensorflow-ad009c5dd42c
+# and https://github.com/keras-team/keras/blob/v2.11.0/keras/applications/mobilenet.py#L82-L334
 
 
 def mobilenet_block(tensor_in, filters: int, strides: int, block_id: int):
@@ -22,10 +24,12 @@ def mobilenet_block(tensor_in, filters: int, strides: int, block_id: int):
 def build_mobilenet(output_nodes: int, model_name: str = "mobilenet") -> Model:
     # Start of model:
     inputs = Input(shape=(256, 64, 8, 2), name="input_layer")
-    x = Conv2D(filters=32, kernel_size=3, strides=2,
+    x = Conv3D(filters=32, kernel_size=3, strides=(2, 1, 2),
                padding='same', name="conv_1")(inputs)
     x = BatchNormalization(name="conv1_bn")(x)
     x = ReLU(name="conv1_relu")(x)
+    x = AveragePooling3D(pool_size=(1, 1, 2))(x)
+    x = Reshape([128, 64, 64])(x)
 
     # Middle part
     x = mobilenet_block(x, filters=64, strides=1, block_id=1)
@@ -39,7 +43,7 @@ def build_mobilenet(output_nodes: int, model_name: str = "mobilenet") -> Model:
     x = mobilenet_block(x, filters=1024, strides=2, block_id=12)
     x = mobilenet_block(x, filters=1024, strides=1, block_id=13)
     # output
-    x = AvgPool2D(pool_size=7, strides=1, data_format='channels_first')(x)
+    x = GlobalAveragePooling2D(name='global_avg_pooling')(x)
     outputs = Dense(units=output_nodes, activation='sigmoid',
                     name='predictions')(x)
     model = Model(inputs, outputs, name=model_name)

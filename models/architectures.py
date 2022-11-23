@@ -1,5 +1,7 @@
 import tensorflow as tf
 
+import util.mobilenet_imp as mbnet
+
 
 def le_net(model_name: str, output_nodes: int) -> tf.keras.Model:
     inputs = tf.keras.layers.Input(shape=(256, 64, 8, 2), name="input_layer")
@@ -240,6 +242,19 @@ def six_conv_v2(model_name: str, output_nodes: int) -> tf.keras.Model:
     model = tf.keras.Model(inputs, outputs, name=model_name)
     print(model.summary())
     return model
+
+
+def mobilenet_modified(model_name: str, output_nodes: int) -> tf.keras.Model:
+    """Build and return a modified version of mobilenet created for out data
+
+    Args:
+        model_name (str): name of the model and its directory
+        output_nodes (int): number of classes in the output
+
+    Returns:
+        tf.keras.Model: Modified MobileNet model with 3D->2D conversion in the first few layers
+    """
+    return mbnet.build_mobilenet(output_nodes=output_nodes, model_name=model_name)
 
 
 def main():
