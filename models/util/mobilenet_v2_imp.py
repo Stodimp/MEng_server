@@ -80,7 +80,7 @@ def inverted_residual_block(inputs, expansion: float, stride: int, alpha: float,
     # If dimensions match, add residual connection
     if in_channels == pointwise_filters and stride == 1:
         return Add(name=prefix+"add")([inputs, x])
-    return None
+    return x
 
 
 def mb_conv_block(inputs, expansion: float, stride: int, alpha: float, filters: int, block_id: int):
@@ -91,11 +91,13 @@ def build_mobilenet_v2(classes: int, model_name: str = "mobilenetv2", alpha: flo
     # Set width of model - default 1
     first_block_filters = _make_divisible(32*alpha, 8)
     # Head of model - original
-    inputs = Input(shape=(224, 224, 3), name="input_layer")
-    x = Conv2D(first_block_filters, kernel_size=3, strides=(2, 2),
+    inputs = tf.keras.layers.Input(shape=(256, 64, 8, 2), name="input_layer")
+    x = Conv3D(filters=first_block_filters, kernel_size=3, strides=(2, 1, 2),
                padding='same', use_bias=False, name="Conv1")(inputs)
     x = BatchNormalization(name="bn_Conv1")(x)
     x = ReLU(6.0, name="Conv1_relu")(x)
+    x = tf.keras.layers.AveragePooling3D(pool_size=(1, 1, 2))(x)
+    x = tf.keras.layers.Reshape([128, 64, 64])(x)
 
     # Body of model - inverted residual blocks
     x = inverted_residual_block(
@@ -157,10 +159,11 @@ def build_mobilenet_v2(classes: int, model_name: str = "mobilenetv2", alpha: flo
     x = Conv2D(last_block_filters, kernel_size=1,
                use_bias=False, name="Conv_1")(x)
     x = BatchNormalization(name="Conv_1_bn")(x)
-    x = ReLU(6.0, name="out_relu")
+    x = ReLU(6.0, name="out_relu")(x)
 
     # Model output
     x = GlobalAveragePooling2D()(x)
-    outputs = Dense(classes, activation='sigmoid', name="predictions")
+    outputs = Dense(classes, activation='sigmoid', name="predictions")(x)
     model = Model(inputs, outputs, name=f"{model_name}_{alpha:0.2f}")
+    print(model.summary())
     return model

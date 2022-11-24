@@ -52,11 +52,11 @@ def main() -> int:
     OPTIMIZER = tf.keras.optimizers.Adam()
     LOSS = tf.keras.losses.BinaryCrossentropy()
     EPOCH_NUM = 50
-    MODEL_NAME = "mobilenet_modified_4degree"
+    MODEL_NAME = "mobilenet_v2_4degree"
     CALLBACKS = helper_functions.create_callback_list(
         model_name=MODEL_NAME, patience=10, metric="val_loss")
 
-    model = architectures.mobilenet_modified(
+    model = architectures.mobilenet_v2_modified(
         model_name=MODEL_NAME, output_nodes=output_nodes)
     #########################################################
 

@@ -1,6 +1,7 @@
 import tensorflow as tf
 
 import util.mobilenet_imp as mbnet
+import util.mobilenet_v2_imp as mbnet2
 
 
 def le_net(model_name: str, output_nodes: int) -> tf.keras.Model:
@@ -255,6 +256,10 @@ def mobilenet_modified(model_name: str, output_nodes: int) -> tf.keras.Model:
         tf.keras.Model: Modified MobileNet model with 3D->2D conversion in the first few layers
     """
     return mbnet.build_mobilenet(output_nodes=output_nodes, model_name=model_name)
+
+
+def mobilenet_v2_modified(model_name: str, output_nodes: int, alpha: float = 1) -> tf.keras.Model:
+    return mbnet2.build_mobilenet_v2(classes=output_nodes, model_name=model_name, alpha=alpha)
 
 
 def main():
