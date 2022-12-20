@@ -23,7 +23,7 @@ def main() -> int:
     ADC_PATH = os.path.join(RADDET_PATH, "ADC")
     GT_PATH = os.path.join(RADDET_PATH, "gt_slim")
     # Set GPU memory growth
-    helper_functions.gpu_mem_setup()
+    helper_functions.gpu_mem_setup(mixed=True)
     # Assert GPU available
     assert len(tf.config.list_physical_devices(
         'GPU')) > 0, "Halted - No GPU available!"
@@ -52,12 +52,12 @@ def main() -> int:
     OPTIMIZER = tf.keras.optimizers.Adam()
     LOSS = tf.keras.losses.BinaryCrossentropy()
     EPOCH_NUM = 100
-    MODEL_NAME = "mobilene_v2_convonly_alpha2.5"
+    MODEL_NAME = "efficientnetv2-b0"
     CALLBACKS = helper_functions.create_callback_list(
         model_name=MODEL_NAME, patience=10, metric="val_loss")
 
-    model = architectures.mobilenet_v2_conv_only(
-        model_name=MODEL_NAME, output_nodes=output_nodes, alpha=2.5)
+    model = architectures.efficientnetV2(
+        model_name=MODEL_NAME, output_nodes=output_nodes)
     #########################################################
 
     # Train model
