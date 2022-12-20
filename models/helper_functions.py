@@ -46,7 +46,7 @@ def get_train_val_ds(raddet_path: str, adc_path: str, config_bins: Tuple[int, in
     return train_ds_batched, val_ds_batched
 
 
-def create_callback_list(model_name:str, patience: int = 5, metric: str = "val_AUCROC"):
+def create_callback_list(model_name: str, patience: int = 5, metric: str = "val_AUCROC"):
     checkpoint_path = (
         "checkpoints/"
         + model_name
@@ -66,8 +66,15 @@ def create_callback_list(model_name:str, patience: int = 5, metric: str = "val_A
     return [model_checkpoint, early_stopping]
 
 
-def gpu_mem_setup() -> None:
+def gpu_mem_setup(mixed: bool = False) -> None:
+    # Check if gpu is present
     physical_devices = tf.config.list_physical_devices('GPU')
+    # Set precision
+    if mixed:
+        policy = tf.keras.mixed_precision.Policy('mixed_float16')
+        tf.keras.mixed_precision.set_global_policy(policy)
+        print("Precision set to Mixed FP16")
+    # Set memory growth
     try:
         tf.config.experimental.set_memory_growth(physical_devices[0], True)
     except:
