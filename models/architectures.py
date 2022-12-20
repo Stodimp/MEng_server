@@ -262,6 +262,34 @@ def mobilenet_v2_modified(model_name: str, output_nodes: int, alpha: float = 1) 
     return mbnet2.build_mobilenet_v2(classes=output_nodes, model_name=model_name, alpha=alpha)
 
 
+def conv_only(model_name: str, output_nodes: int) -> tf.keras.Model:
+    inputs = tf.keras.layers.Input(
+        shape=(None, None, None, 2), name="input_layer")
+    x = tf.keras.layers.Conv3D(64, 3, padding="same",
+                               activation="linear", name="conv3d_1")(inputs)
+    x = tf.keras.layers.Dropout(0.2, name="dropout_1")(x)
+    x = tf.keras.layers.Activation("relu", name="relu_1")(x)
+    x = tf.keras.layers.BatchNormalization()(x)
+    x = tf.keras.layers.MaxPooling3D((2, 2, 1), name="maxpool_1")(x)
+    x = tf.keras.layers.Conv3D(128, 3, padding="same",
+                               activation="linear", name="conv3d_2")(x)
+    x = tf.keras.layers.Dropout(0.2, name="dropout_2")(x)
+    x = tf.keras.layers.Activation("relu", name="relu_2")(x)
+    x = tf.keras.layers.BatchNormalization()(x)
+    x = tf.keras.layers.MaxPooling3D((2, 2, 2), name="maxpool_2")(x)
+    x = tf.keras.layers.Conv3D(156, 3, padding="same",
+                               activation="linear", name="conv3d_3")(x)
+    x = tf.keras.layers.Dropout(0.2, name="dropout_3")(x)
+    x = tf.keras.layers.Activation("relu", name="relu_3")(x)
+    x = tf.keras.layers.BatchNormalization()(x)
+    x = tf.keras.layers.GlobalAveragePooling3D()(x)
+    outputs = tf.keras.layers.Dense(
+        output_nodes, activation="sigmoid", name="predictions")(x)
+    model = tf.keras.Model(inputs, outputs, name=model_name)
+    print(model.summary())
+    return model
+
+
 def main():
     return None
 
