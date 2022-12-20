@@ -49,3 +49,33 @@ def build_mobilenet(output_nodes: int, model_name: str = "mobilenet") -> Model:
     model = Model(inputs, outputs, name=model_name)
     print(model.summary())
     return model
+
+
+def build_mobilenet_conv_only(output_nodes: int, model_name: str = "mobilenet") -> Model:
+    # Start of model:
+    inputs = Input(shape=(256, 64, 8, 2), name="input_layer")
+    x = Conv3D(filters=32, kernel_size=3, strides=(2, 1, 2),
+                padding='same', name="conv_1")(inputs)
+    x = BatchNormalization(name="conv1_bn")(x)
+    x = ReLU(name="conv1_relu")(x)
+    x = AveragePooling3D(pool_size=(1, 1, 2))(x)
+    x = Reshape([128, 64, 64])(x)
+
+    # Middle part
+    x = mobilenet_block(x, filters=64, strides=1, block_id=1)
+    x = mobilenet_block(x, filters=128, strides=2, block_id=2)
+    x = mobilenet_block(x, filters=128, strides=1, block_id=3)
+    x = mobilenet_block(x, filters=256, strides=2, block_id=4)
+    x = mobilenet_block(x, filters=256, strides=1, block_id=5)
+    x = mobilenet_block(x, filters=512, strides=2, block_id=6)
+    for i in range(5):
+        x = mobilenet_block(x, filters=512, strides=1, block_id=i+7)
+    x = mobilenet_block(x, filters=1024, strides=2, block_id=12)
+    x = mobilenet_block(x, filters=1024, strides=1, block_id=13)
+    # output
+    x = GlobalAveragePooling2D(name='global_avg_pooling')(x)
+    outputs = Dense(units=output_nodes, activation='sigmoid',
+                    name='predictions')(x)
+    model = Model(inputs, outputs, name=model_name)
+    print(model.summary())
+    return model

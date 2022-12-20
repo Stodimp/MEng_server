@@ -32,7 +32,7 @@ def main() -> int:
     #########################################################
 
     # Data setup
-    AZIMUTH_BIN_NUM = 18
+    AZIMUTH_BIN_NUM = 45
     RANGE_BIN_NUM = 50
     OVERLAP = True
     BATCH_SIZE = 32
@@ -52,12 +52,12 @@ def main() -> int:
     OPTIMIZER = tf.keras.optimizers.Adam()
     LOSS = tf.keras.losses.BinaryCrossentropy()
     EPOCH_NUM = 100
-    MODEL_NAME = "conv_only_10degree"
+    MODEL_NAME = "mobilene_v2_convonly_alpha2.5"
     CALLBACKS = helper_functions.create_callback_list(
         model_name=MODEL_NAME, patience=10, metric="val_loss")
 
-    model = architectures.conv_only(
-        model_name=MODEL_NAME, output_nodes=output_nodes)
+    model = architectures.mobilenet_v2_conv_only(
+        model_name=MODEL_NAME, output_nodes=output_nodes, alpha=2.5)
     #########################################################
 
     # Train model

@@ -167,3 +167,85 @@ def build_mobilenet_v2(classes: int, model_name: str = "mobilenetv2", alpha: flo
     model = Model(inputs, outputs, name=f"{model_name}_{alpha:0.2f}")
     print(model.summary())
     return model
+
+
+def build_mobilenet_v2_conv_only_reshape(classes: int, model_name: str = "mobilenetv2", alpha: float = 1):
+    # Set width of model - default 1
+    first_block_filters = _make_divisible(32*alpha, 8)
+    # Head of model - original
+    inputs = tf.keras.layers.Input(shape=(None, None, None, 2), name="input_layer")
+    x = Conv3D(filters=first_block_filters, kernel_size=3, strides=(2, 1, 1),
+               padding='same', use_bias=False, name="Conv1")(inputs)
+    x = BatchNormalization(name="bn_Conv1")(x)
+    x = ReLU(6.0, name="Conv1_relu")(x)
+    x = tf.keras.layers.AveragePooling3D(pool_size=(1, 1, 2))(x)
+    x = tf.keras.layers.Lambda(lambda x : tf.reduce_mean(x, axis=3, keepdims=False))(x)
+
+    # Body of model - inverted residual blocks
+    x = inverted_residual_block(
+        x, filters=16, alpha=alpha, stride=1, expansion=1, block_id=0)
+
+    x = inverted_residual_block(
+        x, filters=24, alpha=alpha, stride=2, expansion=6, block_id=1)
+
+    x = inverted_residual_block(
+        x, filters=24, alpha=alpha, stride=1, expansion=6, block_id=2)
+
+    x = inverted_residual_block(
+        x, filters=32, alpha=alpha, stride=2, expansion=6, block_id=3)
+
+    x = inverted_residual_block(
+        x, filters=32, alpha=alpha, stride=1, expansion=6, block_id=4)
+
+    x = inverted_residual_block(
+        x, filters=32, alpha=alpha, stride=1, expansion=6, block_id=5)
+
+    x = inverted_residual_block(
+        x, filters=64, alpha=alpha, stride=2, expansion=6, block_id=6)
+
+    x = inverted_residual_block(
+        x, filters=64, alpha=alpha, stride=1, expansion=6, block_id=7)
+
+    x = inverted_residual_block(
+        x, filters=64, alpha=alpha, stride=1, expansion=6, block_id=8)
+
+    x = inverted_residual_block(
+        x, filters=64, alpha=alpha, stride=1, expansion=6, block_id=9)
+
+    x = inverted_residual_block(
+        x, filters=96, alpha=alpha, stride=1, expansion=6, block_id=10)
+
+    x = inverted_residual_block(
+        x, filters=96, alpha=alpha, stride=1, expansion=6, block_id=11)
+
+    x = inverted_residual_block(
+        x, filters=96, alpha=alpha, stride=1, expansion=6, block_id=12)
+
+    x = inverted_residual_block(
+        x, filters=160, alpha=alpha, stride=2, expansion=6, block_id=13)
+
+    x = inverted_residual_block(
+        x, filters=160, alpha=alpha, stride=1, expansion=6, block_id=14)
+
+    x = inverted_residual_block(
+        x, filters=160, alpha=alpha, stride=1, expansion=6, block_id=15)
+
+    x = inverted_residual_block(
+        x, filters=320, alpha=alpha, stride=1, expansion=6, block_id=16)
+
+    # Alpha does not apply to end of the model
+    if alpha > 1.0:
+        last_block_filters = _make_divisible(1280 * alpha, 8)
+    else:
+        last_block_filters = 1280
+    x = Conv2D(last_block_filters, kernel_size=1,
+               use_bias=False, name="Conv_1")(x)
+    x = BatchNormalization(name="Conv_1_bn")(x)
+    x = ReLU(6.0, name="out_relu")(x)
+
+    # Model output
+    x = GlobalAveragePooling2D()(x)
+    outputs = Dense(classes, activation='sigmoid', name="predictions")(x)
+    model = Model(inputs, outputs, name=f"{model_name}_{alpha:0.2f}")
+    print(model.summary())
+    return model
