@@ -667,7 +667,9 @@ def EfficientNetV2(width_coefficient: float,
 
     ############
     # Input layer
-    inputs = layers.Input(shape=input_shape)
+    inputs = layers.Input(shape=(None, None, None, 2))
+    # Normalize
+    x = layers.Normalization()(inputs)
     # Get starting filter count
     stem_filters = round_filters(filters=blocks_args[0]["input_filters"],
                                  width_coefficient=width_coefficient,
@@ -680,7 +682,7 @@ def EfficientNetV2(width_coefficient: float,
                       padding="same",
                       use_bias=False,
                       name="stem_conv"
-                      )(inputs)
+                      )(x)
     x = layers.BatchNormalization(momentum=bn_momentum, name="stem_bn")(x)
     x = layers.Activation(activation, name="stem_activation")(x)
     x = layers.Lambda(lambda x: tf.reduce_mean(x, axis=3, keepdims=False))(x)
@@ -813,4 +815,21 @@ def EfficientNetV2S(
         input_shape=input_shape,
         classes=classes,
         classifier_activation=classifier_activation,
+    )
+
+def EfficientNetV2B0_drop_bn(
+    classes: int,
+    input_shape: Tuple[int, ...] = (256, 64, 8, 2),
+    classifier_activation: str = "sigmoid",
+) -> tf.keras.Model:
+    return EfficientNetV2(
+        width_coefficient=1.0,
+        depth_coefficient=1.0,
+        model_name="efficientnetv2-b0",
+        input_shape=input_shape,
+        classes=classes,
+        classifier_activation=classifier_activation,
+        drop_connect_rate=0.25,
+        dropout_rate=0.25,
+        bn_momentum=0.99,
     )

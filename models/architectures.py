@@ -263,12 +263,19 @@ def mobilenet_conv_only(model_name: str, output_nodes: int) -> tf.keras.Model:
     return mbnet.build_mobilenet_conv_only(output_nodes=output_nodes, model_name=model_name)
 
 
+def mobilenet_swish(model_name: str, output_nodes: int) -> tf.keras.Model:
+    return mbnet.build_mobilenet_swish(output_nodes=output_nodes, model_name=model_name)
+
 def mobilenet_v2_modified(model_name: str, output_nodes: int, alpha: float = 1) -> tf.keras.Model:
     return mbnet2.build_mobilenet_v2(classes=output_nodes, model_name=model_name, alpha=alpha)
 
 
 def mobilenet_v2_conv_only(model_name: str, output_nodes: int, alpha: float = 1) -> tf.keras.Model:
     return mbnet2.build_mobilenet_v2_conv_only_reshape(classes=output_nodes, model_name=model_name, alpha=alpha)
+
+
+def mobilenet_v2_swish(model_name: str, output_nodes: int, alpha: float = 1) -> tf.keras.Model:
+    return mbnet2.build_mobilenet_v2_conv_only_swish(classes=output_nodes, model_name=model_name, alpha=alpha)
 
 
 def conv_only(model_name: str, output_nodes: int) -> tf.keras.Model:
@@ -345,9 +352,8 @@ def six_conv_only(model_name: str, output_nodes: int) -> tf.keras.Model:
     return model
 
 
-
 def efficientnetV2(model_name:str, output_nodes:int) -> tf.keras.Model:
-    implemented_models = ["efficientnetv2-b0", "efficientnetv2-b2", "efficientnetv2-b3", "efficientnetv2-s"]
+    implemented_models = ["efficientnetv2-b0", "efficientnetv2-b2", "efficientnetv2-b3", "efficientnetv2-s", "efficientnetv2-b0-drop-bn"]
     assert model_name in implemented_models
 
     if model_name == implemented_models[0]:
@@ -355,9 +361,11 @@ def efficientnetV2(model_name:str, output_nodes:int) -> tf.keras.Model:
     elif model_name == implemented_models[1]:
         model = effnetv2.EfficientNetV2B2(classes=output_nodes)
     elif model_name == implemented_models[2]:
-        model = effnetv2.EfficientNetV2B2(classes=output_nodes)
+        model = effnetv2.EfficientNetV2B3(classes=output_nodes)
     elif model_name == implemented_models[3]:
-        model = effnetv2.EfficientNetV2B2(classes=output_nodes)
+        model = effnetv2.EfficientNetV2S(classes=output_nodes)
+    elif model_name == implemented_models[4]:
+        model = effnetv2.EfficientNetV2B0_drop_bn(classes=output_nodes)
     else:
         raise ValueError("Model nameee requested not yet implemented")
     print(model.summary())
