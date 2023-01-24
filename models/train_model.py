@@ -52,12 +52,12 @@ def main() -> int:
     OPTIMIZER = tf.keras.optimizers.Adam()
     LOSS = tf.keras.losses.BinaryCrossentropy()
     EPOCH_NUM = 100
-    MODEL_NAME = "mobilenet_swish"
+    MODEL_NAME = "mobilenet_v2_tiny"
     CALLBACKS = helper_functions.create_callback_list(
         model_name=MODEL_NAME, patience=10, metric="val_loss")
 
-    model = architectures.mobilenet_swish(
-        model_name=MODEL_NAME, output_nodes=output_nodes)
+    model = architectures.mobilenet_v2_swish(
+        model_name=MODEL_NAME, output_nodes=output_nodes, alpha=0.35)
     #########################################################
 
     # Train model

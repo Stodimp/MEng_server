@@ -670,6 +670,8 @@ def EfficientNetV2(width_coefficient: float,
     inputs = layers.Input(shape=(None, None, None, 2))
     # Normalize
     x = layers.Normalization()(inputs)
+    # Gaussian Noise
+    x = layers.GaussianNoise(0.5)(x)
     # Get starting filter count
     stem_filters = round_filters(filters=blocks_args[0]["input_filters"],
                                  width_coefficient=width_coefficient,
@@ -816,6 +818,7 @@ def EfficientNetV2S(
         classes=classes,
         classifier_activation=classifier_activation,
     )
+
 
 def EfficientNetV2B0_drop_bn(
     classes: int,

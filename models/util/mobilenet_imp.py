@@ -95,7 +95,7 @@ def build_mobilenet_swish(output_nodes: int, model_name: str = "mobilenet") -> M
     # Start of model:
     inputs = Input(shape=(None, None, None, 2), name="input_layer")
     x = tf.keras.layers.Normalization()(inputs)
-    x = tf.keras.layers.GaussianNoise(1)(x)
+    x = tf.keras.layers.GaussianNoise(0.5)(x)
     x = Conv3D(filters=32, kernel_size=3, strides=(2, 1, 2),
                padding='same', name="conv_1")(x)
     x = BatchNormalization(name="conv1_bn")(x)
